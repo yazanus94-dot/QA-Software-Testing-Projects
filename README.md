@@ -25,8 +25,8 @@ Eight jobs on every push (`.github/workflows/qa.yml`):
 | Newman functional + data-driven | live [Restful-Booker](https://restful-booker.herokuapp.com/apidoc/index.html) | chained requests, CSV-driven, htmlextra reports as artifacts |
 | API→DB integrity | Restful-Booker + SQLite | `pytest -m db` — API responses must match persisted data |
 | Appium suite validation | local | imports + collection of all 13 mobile tests (emulator smoke runs on manual dispatch) |
-| pytest performance budgets | live [k6 demo API](https://test-api.k6.io) | latency SLOs asserted in the normal test run |
-| k6 smoke gate | k6 demo API | smoke profile as a merge gate |
+| pytest performance budgets | live [JSONPlaceholder](https://jsonplaceholder.typicode.com) | latency SLOs asserted in the normal test run |
+| k6 smoke gate | live JSONPlaceholder | smoke profile as a merge gate; the authenticated k6 workflow targets Restful-Booker |
 | AI/LLM offline suite | built-in mock LLM | 46 tests: hallucination, injection, PII, robustness, consistency |
 | Promptfoo eval + red-team | mock provider | LLM-judge configs run headlessly, results as artifacts |
 

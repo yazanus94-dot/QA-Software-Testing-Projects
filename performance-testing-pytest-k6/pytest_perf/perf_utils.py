@@ -39,13 +39,17 @@ def percentile(sorted_values: list[float], pct: float) -> float:
     return sorted_values[max(0, min(len(sorted_values) - 1, rank - 1))]
 
 
-def _one(session: requests.Session, method: str, url: str, **kw):
+def _one(session: requests.Session, method: str, url: str, retries: int = 1, **kw):
     start = time.perf_counter()
-    try:
-        r = session.request(method, url, timeout=15, **kw)
-        ok = r.status_code < 400
-    except requests.RequestException:
-        ok = False
+    for attempt in range(retries + 1):
+        try:
+            r = session.request(method, url, timeout=15, **kw)
+            ok = r.status_code < 400
+        except requests.RequestException:
+            ok = False
+        if ok or attempt == retries:
+            break
+        time.sleep(1.0)
     return (time.perf_counter() - start) * 1000, ok
 
 

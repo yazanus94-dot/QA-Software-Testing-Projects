@@ -5,7 +5,9 @@ import pytest
 
 @pytest.fixture(scope="session")
 def base_url() -> str:
-    return os.getenv("BASE_URL", "https://test-api.k6.io").rstrip("/")
+    # JSONPlaceholder: a stable public JSON API suited to latency budget gates.
+    # (Restful-Booker, the auth-flow target, rate-limits bursts on its free dyno.)
+    return os.getenv("BASE_URL", "https://jsonplaceholder.typicode.com").rstrip("/")
 
 
 # Performance budgets (override via env to tighten/relax per environment).

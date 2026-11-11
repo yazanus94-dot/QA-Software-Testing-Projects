@@ -1,34 +1,33 @@
-// API workflow under load: register -> login -> authenticated request (setup creates the user once).
+// Authenticated workflow under load: log in -> read a booking detail with the session token.
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { BASE_URL } from './lib/config.js';
+// Authenticated workflow targets Restful-Booker (JSONPlaceholder has no auth); override with RB_BASE_URL if needed.
+const BASE_URL = __ENV.RB_BASE_URL || 'https://restful-booker.herokuapp.com';
 import { makeSummary } from './lib/summary.js';
 
 export const options = {
   vus: 5,
   duration: '1m',
-  thresholds: { http_req_failed: ['rate<0.02'], 'http_req_duration{name:login}': ['p(95)<1500'] },
+  thresholds: { http_req_failed: ['rate<0.02'], 'http_req_duration{name:auth}': ['p(95)<1500'] },
 };
 
 const JSON_HEADERS = { headers: { 'Content-Type': 'application/json' } };
 
+// Restful-Booker issues a session token for its fixed demo credentials.
 export function setup() {
-  const user = `qa_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
-  const creds = { username: user, password: 'S3cret-pass!', email: `${user}@example.com`, first_name: 'QA', last_name: 'Perf' };
-  const r = http.post(`${BASE_URL}/user/register/`, JSON.stringify(creds), JSON_HEADERS);
-  check(r, { 'registered (201)': (x) => x.status === 201 });
-  return creds;
+  const r = http.post(`${BASE_URL}/auth`,
+    JSON.stringify({ username: 'admin', password: 'password123' }),
+    { ...JSON_HEADERS, tags: { name: 'auth' } });
+  check(r, { 'auth 200': (x) => x.status === 200, 'has token': (x) => !!x.json('token') });
+  return { token: r.json('token') };
 }
 
-export default function (creds) {
-  const login = http.post(`${BASE_URL}/auth/token/login/`,
-    JSON.stringify({ username: creds.username, password: creds.password }),
-    { ...JSON_HEADERS, tags: { name: 'login' } });
-  const ok = check(login, { 'login 200': (r) => r.status === 200, 'has token': (r) => !!r.json('access') });
-  if (!ok) return;
-
-  const mine = http.get(`${BASE_URL}/my/crocodiles/`, { headers: { Authorization: `Bearer ${login.json('access')}` } });
-  check(mine, { 'my crocodiles 200': (r) => r.status === 200 });
+export default function (data) {
+  const detail = http.get(`${BASE_URL}/booking/1`, { headers: { Cookie: `token=${data.token}` } });
+  check(detail, {
+    'booking detail 200': (r) => r.status === 200,
+    'detail has firstname': (r) => !!r.json('firstname'),
+  });
   sleep(1);
 }
 

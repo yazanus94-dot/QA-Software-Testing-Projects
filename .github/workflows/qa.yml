@@ -109,7 +109,7 @@ jobs:
           retention-days: 14
 
   perf-k6-smoke:
-    name: k6 smoke gate (test-api.k6.io)
+    name: k6 smoke gate (JSONPlaceholder)
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -19,7 +19,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get(`${BASE_URL}/public/crocodiles/`);
+  const res = http.get(`${BASE_URL}/posts`);
   check(res, { 'status 200': (r) => r.status === 200 });
   sleep(1);
 }

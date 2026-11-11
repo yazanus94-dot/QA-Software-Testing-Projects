@@ -7,7 +7,7 @@ import { makeSummary } from './lib/summary.js';
 export const options = { vus: 1, duration: '30s', thresholds, tags: { test_type: 'smoke' } };
 
 export default function () {
-  const res = http.get(`${BASE_URL}/public/crocodiles/`);
+  const res = http.get(`${BASE_URL}/posts`);
   check(res, {
     'status is 200': (r) => r.status === 200,
     'returns a list': (r) => Array.isArray(r.json()),

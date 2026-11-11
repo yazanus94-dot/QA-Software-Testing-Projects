@@ -1,4 +1,4 @@
-﻿# ⚡ Performance Testing — k6 + Pytest
+# ⚡ Performance Testing — k6 + Pytest
 
 ![k6](https://img.shields.io/badge/k6-load_testing-7D64FF) ![Pytest](https://img.shields.io/badge/Pytest-budget_gates-green) ![CI](https://img.shields.io/badge/GitHub_Actions-ready-black)
 
@@ -9,7 +9,7 @@ Two complementary approaches to performance testing, both with **explicit perfor
 | **k6** | Realistic load profiles: smoke, load, stress, spike, authenticated workflow; HTML + JSON reports | `k6/` |
 | **pytest** | Fast latency/throughput budget gates in the normal test run, custom Python logic | `pytest_perf/` |
 
-Target: the public k6 demo API `https://test-api.k6.io` (safe to test; made for this purpose).
+Targets: the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API for list/detail latency profiles, and [Restful-Booker](https://restful-booker.herokuapp.com/apidoc/index.html) for the authenticated workflow (both are public demo/test APIs made for this purpose).
 
 > Author: **Yazan Aljabari** | QA / Software Test Engineer
 
