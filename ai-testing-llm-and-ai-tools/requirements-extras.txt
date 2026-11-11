@@ -1,0 +1,5 @@
+deepeval>=1.0
+playwright>=1.48
+eyes-playwright>=5.0
+openai>=1.40
+anthropic>=0.34

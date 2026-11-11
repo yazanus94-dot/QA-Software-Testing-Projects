@@ -1,0 +1,227 @@
+name: qa-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  playwright-chromium:
+    name: Playwright E2E (Chromium vs SauceDemo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: playwright-automation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=chromium --grep-invert @visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-automation/playwright-report/
+            playwright-automation/test-results/
+          retention-days: 14
+
+  api-newman:
+    name: API functional + data-driven (Newman)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-testing-postman
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run test:functional
+      - run: npm run test:datadriven
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-reports
+          path: api-testing-postman/reports/
+          retention-days: 14
+
+  api-db-integrity:
+    name: API -> SQLite integrity checks (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-testing-postman
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest requests jsonschema pytest-html
+      - run: pytest -m db -v --html=reports/db-report.html --self-contained-html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: db-integrity-report
+          path: api-testing-postman/reports/
+          retention-days: 14
+
+  mobile-suite-validation:
+    name: Appium suite structure validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-testing-appium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Validate imports and test collection
+        run: python -m pytest --collect-only -q
+
+  perf-budget-gates:
+    name: Performance budgets (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: performance-testing-pytest-k6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-perf-results
+          path: performance-testing-pytest-k6/results/
+          retention-days: 14
+
+  perf-k6-smoke:
+    name: k6 smoke gate (test-api.k6.io)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: performance-testing-pytest-k6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - run: k6 run k6/smoke.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-smoke-results
+          path: performance-testing-pytest-k6/results/
+          retention-days: 14
+
+  appium-android:
+    name: Mobile smoke on Android emulator (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile-testing-appium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Appium + UiAutomator2 driver
+        run: |
+          npm i -g appium
+          appium driver install uiautomator2
+      - name: Download demo APK
+        run: |
+          mkdir -p apps
+          gh release download --repo saucelabs/my-demo-app-android --pattern "*.apk" --dir apps || true
+          mv apps/*.apk apps/mda-app.apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Run smoke tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: |
+            appium --log-level error &
+            sleep 10
+            pytest -m smoke --reruns 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-report
+          path: |
+            mobile-testing-appium/reports/
+            mobile-testing-appium/screenshots/
+          retention-days: 14
+
+  ai-pytest-offline:
+    name: AI/LLM quality & safety (mock LLM)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-testing-llm-and-ai-tools
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt playwright
+      - run: playwright install --with-deps chromium
+      - run: pytest
+        env:
+          LLM_PROVIDER: mock
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-test-report
+          path: ai-testing-llm-and-ai-tools/reports/
+          retention-days: 14
+
+  ai-promptfoo:
+    name: Promptfoo evals + red-team (mock provider)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-testing-llm-and-ai-tools
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: pip install -r requirements.txt
+      - run: npx --yes promptfoo@latest eval --output output/results.json --no-cache
+        env:
+          LLM_PROVIDER: mock
+          PROMPTFOO_PYTHON: python
+        working-directory: ai-testing-llm-and-ai-tools/promptfoo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: promptfoo-results
+          path: ai-testing-llm-and-ai-tools/promptfoo/output/
+          retention-days: 14

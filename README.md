@@ -1,131 +1,68 @@
 # QA Software Testing Projects Portfolio
 
-## 👋 Introduction
+[![QA Tests](https://github.com/yazanus94-dot/QA-Software-Testing-Projects/actions/workflows/qa.yml/badge.svg)](https://github.com/yazanus94-dot/QA-Software-Testing-Projects/actions/workflows/qa.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue) ![Node 20](https://img.shields.io/badge/node-20-brightgreen) ![License](https://img.shields.io/badge/license-MIT-green)
 
-Welcome to my **QA Software Testing Portfolio**!
+Hands-on QA engineering across **five disciplines**, each an independent project
+with its own framework, docs (test plan / test cases / bug report) and CI:
+web E2E, API, mobile, performance, and AI/LLM quality & safety.
 
-This repository contains hands-on software quality assurance projects covering different areas of software testing, including test automation, API testing, mobile testing, performance testing, and AI/LLM testing.
+| # | Project | Stack | What it proves |
+|---|---------|-------|----------------|
+| 1 | [playwright-automation](playwright-automation/) | **Playwright + TypeScript** | Page Object Model + custom fixtures, data-driven logins, network interception (`page.route`), axe-core a11y audit, visual regression, trace/video-on-failure; matrix over Chromium/Firefox/WebKit + mobile viewports |
+| 2 | [api-testing-postman](api-testing-postman/) | **Postman/Newman + pytest + SQLite** | Four testing layers: functional collections (chained requests, JSON schema, auth negatives), CSV data-driven runs, API→DB integrity checks, and an API→UI hybrid test |
+| 3 | [mobile-testing-appium](mobile-testing-appium/) | **Appium 2 + UiAutomator2 (Android)** | POM with explicit waits (no sleeps), data-driven + negative login, mobile gestures/orientation/lifecycle tests, auto failure screenshots, runs on an Android emulator in CI |
+| 4 | [performance-testing-pytest-k6](performance-testing-pytest-k6/) | **k6 + pytest** | Explicit SLO budgets: smoke/load/stress/spike k6 profiles + pytest latency budget gates (p95/p99, error rate) asserting real-world targets |
+| 5 | [ai-testing-llm-and-ai-tools](ai-testing-llm-and-ai-tools/) | **pytest + Promptfoo + DeepEval** | Tests an LLM app for correctness, hallucination/grounding, prompt injection, PII leakage, robustness (46 offline tests on a deterministic mock LLM) + Promptfoo evals & red-team configs, and AI-powered tooling (self-healing locators, Visual AI) |
 
-My goal is to develop practical QA engineering skills, improve software reliability, identify defects, and explore modern testing technologies used in real-world software development.
+## How the suite runs in CI
 
-## 🛠️ Technologies & Tools
+Eight jobs on every push (`.github/workflows/qa.yml`):
 
-| Technology | Purpose |
-|---|---|
-| Playwright | Web UI and end-to-end test automation |
-| Postman | API testing and validation |
-| Appium | Mobile application test automation |
-| Python & pytest | Test scripting and performance testing |
-| k6 | Load and performance testing |
-| AI & LLM Testing Tools | Evaluating AI-powered applications and LLM outputs |
-| Git & GitHub | Version control and project management |
+| Job | Target | Notes |
+|-----|--------|-------|
+| Playwright E2E | live [SauceDemo](https://www.saucedemo.com) | Chromium (full 3-browser + visual matrix is available per-project via config) |
+| Newman functional + data-driven | live [Restful-Booker](https://restful-booker.herokuapp.com/apidoc/index.html) | chained requests, CSV-driven, htmlextra reports as artifacts |
+| API→DB integrity | Restful-Booker + SQLite | `pytest -m db` — API responses must match persisted data |
+| Appium suite validation | local | imports + collection of all 13 mobile tests (emulator smoke runs on manual dispatch) |
+| pytest performance budgets | live [k6 demo API](https://test-api.k6.io) | latency SLOs asserted in the normal test run |
+| k6 smoke gate | k6 demo API | smoke profile as a merge gate |
+| AI/LLM offline suite | built-in mock LLM | 46 tests: hallucination, injection, PII, robustness, consistency |
+| Promptfoo eval + red-team | mock provider | LLM-judge configs run headlessly, results as artifacts |
 
-## 📂 Projects & Features
+The AI project also has a **manual `live-llm` mode**: same tests, `LLM_PROVIDER=openai`
+with a repository secret — showing the suite doesn't change when the model does.
 
-### 1. Playwright Automation
-- Automated browser-based testing.
-- UI and end-to-end testing scenarios.
-- Validation of application functionality.
-
-### 2. API Testing – Postman
-- API request and response validation.
-- HTTP status code verification.
-- Testing API functionality and error scenarios.
-
-### 3. Mobile Testing – Appium
-- Mobile application testing and automation.
-- Validation of mobile application functionality.
-- Exploration of automated mobile testing workflows.
-
-### 4. Performance Testing – pytest & k6
-- Performance and load testing.
-- Evaluating application responsiveness.
-- Identifying potential performance bottlenecks.
-
-### 5. AI Testing – LLM & AI Tools
-- Testing AI-powered applications.
-- Evaluating AI-generated responses.
-- Exploring output quality, reliability, and consistency.
-
-## ⚙️ How I Built These Projects
-
-I organized this portfolio into independent projects, focusing on different software testing methodologies.
-
-My general development workflow:
-
-1. **Requirements Analysis:** Identify the testing objectives and application functionality.
-2. **Test Planning:** Define test scenarios, expected results, and testing strategies.
-3. **Tool Selection:** Choose the appropriate technology based on the testing requirements.
-4. **Test Implementation:** Develop and organize test scripts and test scenarios.
-5. **Test Execution:** Execute tests and examine the results.
-6. **Analysis & Improvement:** Review failures, identify potential defects, and improve test coverage.
-
-## 🎓 What I Learned
-
-Through these projects, I developed practical knowledge of:
-
-- Manual and automated software testing concepts.
-- Web UI and end-to-end test automation.
-- REST API testing and validation.
-- Mobile application testing.
-- Performance and load testing fundamentals.
-- Python-based test automation.
-- AI and LLM application testing.
-- Test planning, execution, and result analysis.
-- Organizing testing projects using Git and GitHub.
-
-## 🚀 Future Improvements
-
-I plan to expand this portfolio by:
-
-- Adding more real-world testing scenarios and edge cases.
-- Integrating automated testing into CI/CD pipelines using GitHub Actions.
-- Including detailed test reports, screenshots, and execution results.
-- Improving test coverage and reusable automation frameworks.
-- Exploring security testing and advanced API testing.
-- Expanding AI/LLM evaluation using measurable quality and reliability metrics.
-
-## 💻 How to Run the Projects
-
-Each project is independent and has its own setup requirements.
-
-**Step 1 – Clone the repository**
+## Quick start
 
 ```bash
-git clone https://github.com/yazanus94-dot/QA-Software-Testing-Projects.git
+# 1. Web E2E (TypeScript)
+cd playwright-automation && npm install && npx playwright install chromium && npm test
+
+# 2. API testing
+cd api-testing-postman && npm install && npm run test:api   # Newman collections
+python -m pytest -m db                                      # API->DB integrity
+
+# 3. Mobile (needs an Android emulator + Appium)
+cd mobile-testing-appium && pip install -r requirements.txt && python -m pytest -m smoke
+
+# 4. Performance
+cd performance-testing-pytest-k6 && pip install -r requirements.txt && python -m pytest
+k6 run k6/smoke.js                                          # (with the k6 CLI installed)
+
+# 5. AI/LLM testing (offline, no API keys needed)
+cd ai-testing-llm-and-ai-tools && pip install -r requirements.txt && python -m pytest
 ```
 
-**Step 2 – Navigate to the repository**
-
-```bash
-cd QA-Software-Testing-Projects
-```
-
-**Step 3 – Select and extract a project**
-
-Choose the ZIP file you want to explore and extract it into its own folder.
-
-**Step 4 – Install the required dependencies**
-
-Install the tools and dependencies required by the selected project. These may include Playwright, Postman, Appium, Python, pytest, or k6.
-
-**Step 5 – Execute the tests**
-
-Follow the individual project's setup instructions and execute its test scripts using the appropriate testing tool.
-
-> Note: Exact installation and execution commands depend on the configuration and files included in each project.
-
-## 🎥 Project Demonstration
+## Project demonstration
 
 Watch the video demonstration to see the testing projects, implementation, and execution results.
 
-**Video:** 
+**Video:** https://github.com/user-attachments/assets/d3561295-e508-4403-9d84-ab3464b93379
 
-https://github.com/user-attachments/assets/d3561295-e508-4403-9d84-ab3464b93379
+## References & learning resources
 
-## 📚 References & Learning Resources
-
-The following official documentation and industry resources were used as technical references for learning, implementation, and understanding software testing methodologies.
+Official documentation and industry resources used as technical references.
 
 | Tool / Standard | Official Reference |
 |---|---|
@@ -137,4 +74,11 @@ The following official documentation and industry resources were used as technic
 | OWASP GenAI / LLM Security | https://genai.owasp.org/llm-top-10/ |
 | NIST AI Risk Management Framework | https://www.nist.gov/itl/ai-risk-management-framework |
 
-**Note:** These resources provide technical guidance and testing standards. They are not presented as original project code or as proof that every project implemented every documented practice.
+## Scope
+
+Portfolio projects by Yazan Aljabari. Live third-party demo sites are used as test
+targets per their terms; no vendor or client data.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

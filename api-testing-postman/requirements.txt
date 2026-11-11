@@ -1,0 +1,5 @@
+pytest>=8.0
+requests>=2.32
+jsonschema>=4.22
+pytest-html>=4.1
+pytest-playwright>=0.5   # only needed for the hybrid API->UI test

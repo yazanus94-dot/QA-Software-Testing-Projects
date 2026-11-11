@@ -1,0 +1,6 @@
+firstname,lastname,totalprice,depositpaid,checkin,checkout,additionalneeds
+Sara,Hassan,120,true,2026-12-01,2026-12-03,Breakfast
+Omar,Khalid,450,false,2026-12-10,2026-12-15,Late checkout
+Lina,Nasser,80,true,2026-12-20,2026-12-21,None
+John,O'Neil,999,false,2027-01-02,2027-01-09,Extra bed
+Zoë,Müller,300,true,2027-02-14,2027-02-16,Vegetarian meals

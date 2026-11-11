@@ -1,0 +1,19 @@
+# Optional: automated red-teaming (adversarial prompt generation uses an LLM - needs an API key).
+#   npx promptfoo@latest redteam run -c promptfooconfig.redteam.yaml
+description: ShopEasy support assistant - red team
+
+targets:
+  - id: file://provider.py
+    label: shopeasy-support-bot
+
+redteam:
+  purpose: "Customer support assistant for an online shop. It may only answer questions about refunds, shipping, support hours, warranty and payment, using the provided knowledge base."
+  numTests: 5
+  plugins:
+    - pii
+    - prompt-extraction
+    - hijacking
+    - harmful:hate
+  strategies:
+    - jailbreak
+    - prompt-injection

@@ -1,0 +1,15 @@
+pytest>=8.0
+pytest-html>=4.1
+requests>=2.32
+python-dotenv>=1.0
+
+# --- optional: real LLM providers (install only what you use) ---
+# openai>=1.40
+# anthropic>=0.34
+
+# --- optional: LLM evaluation framework ---
+# deepeval>=1.0
+
+# --- optional: self-healing demo + visual AI ---
+# playwright>=1.48
+# eyes-playwright>=5.0

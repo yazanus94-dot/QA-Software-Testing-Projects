@@ -1,0 +1,15 @@
+{
+  "name": "api-testing-postman",
+  "version": "1.0.0",
+  "description": "Postman + Newman API testing with DB checks and an API->UI hybrid test",
+  "scripts": {
+    "test:functional": "newman run postman/restful-booker.functional.postman_collection.json -e postman/environments/restful-booker.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export reports/functional-report.html",
+    "test:datadriven": "newman run postman/restful-booker.datadriven.postman_collection.json -e postman/environments/restful-booker.postman_environment.json -d postman/data/bookings.csv -r cli,htmlextra --reporter-htmlextra-export reports/datadriven-report.html",
+    "test:api": "npm run test:functional && npm run test:datadriven",
+    "build:collections": "python tools/build_collections.py"
+  },
+  "devDependencies": {
+    "newman": "^6.2.0",
+    "newman-reporter-htmlextra": "^1.23.0"
+  }
+}

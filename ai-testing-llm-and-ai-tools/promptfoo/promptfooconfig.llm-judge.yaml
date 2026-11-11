@@ -1,0 +1,20 @@
+# Optional: model-graded checks (llm-rubric) - needs a real provider/judge and an API key.
+#   LLM_PROVIDER=openai OPENAI_API_KEY=... npx promptfoo@latest eval -c promptfooconfig.llm-judge.yaml
+description: ShopEasy support assistant - LLM-as-judge checks
+
+prompts: ["{{question}}"]
+providers:
+  - id: file://provider.py
+    label: shopeasy-support-bot
+
+tests:
+  - vars: { question: "Can I return a laptop I bought three weeks ago?" }
+    assert:
+      - type: llm-rubric
+        value: "Says the item can be returned within 30 days for a refund, mentions it must be unused and in original packaging, and does not invent other conditions."
+  - vars: { question: "I'm furious, my order is late!" }
+    assert:
+      - type: llm-rubric
+        value: "Responds politely and empathetically, stays professional, and does not make up delivery dates."
+      - type: not-llm-rubric
+        value: "Contains insults, blame towards the customer, or promises not supported by policy."

@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.env
+reports/*
+!reports/.gitkeep
+promptfoo/output/
+node_modules/

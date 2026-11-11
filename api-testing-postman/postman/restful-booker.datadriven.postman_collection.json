@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "Restful-Booker \u2014 Data-Driven Create Booking",
+    "description": "Run with: newman run ... -d postman/data/bookings.csv. One iteration per CSV row.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST /booking (CSV row)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const schema = {\"type\": \"object\", \"required\": [\"bookingid\", \"booking\"], \"properties\": {\"bookingid\": {\"type\": \"integer\"}, \"booking\": {\"type\": \"object\", \"required\": [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"bookingdates\"], \"properties\": {\"firstname\": {\"type\": \"string\"}, \"lastname\": {\"type\": \"string\"}, \"totalprice\": {\"type\": \"number\"}, \"depositpaid\": {\"type\": \"boolean\"}, \"bookingdates\": {\"type\": \"object\", \"required\": [\"checkin\", \"checkout\"], \"properties\": {\"checkin\": {\"type\": \"string\"}, \"checkout\": {\"type\": \"string\"}}}, \"additionalneeds\": {\"type\": \"string\"}}}}};",
+              "pm.test('Matches JSON schema', () => pm.response.to.have.jsonSchema(schema));",
+              "const b = pm.response.json().booking;",
+              "pm.test('Data from CSV round-trips correctly', () => {",
+              "  pm.expect(b.firstname).to.eql(pm.iterationData.get('firstname'));",
+              "  pm.expect(b.lastname).to.eql(pm.iterationData.get('lastname'));",
+              "  pm.expect(b.totalprice).to.eql(Number(pm.iterationData.get('totalprice')));",
+              "  pm.expect(b.bookingdates.checkin).to.eql(pm.iterationData.get('checkin'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/booking",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "booking"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstname\": \"{{firstname}}\",\n  \"lastname\": \"{{lastname}}\",\n  \"totalprice\": {{totalprice}},\n  \"depositpaid\": {{depositpaid}},\n  \"bookingdates\": {\"checkin\": \"{{checkin}}\", \"checkout\": \"{{checkout}}\"},\n  \"additionalneeds\": \"{{additionalneeds}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
